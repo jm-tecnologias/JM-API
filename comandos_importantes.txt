@@ -1,0 +1,140 @@
+pip install fastapi uvicorn sqlalchemy passlib[bcrypt] python-jose[cryptography] python-dotenv python-multipart
+
+uvicorn main:app --reload
+
+pip install alembic
+alembic init alembic
+alembic revision --autogenerate -m "migracao inicial"
+alembic upgrade head
+pip freeze > requirements.txt
+
+
+
+Esse endpoint deve receber os dados como formulário application/x-www-form-urlencoded, e não como JSON.
+JavaScript com fetch
+async function signIn(username, password) {
+  const formData = new URLSearchParams();
+
+  formData.append("username", username);
+  formData.append("password", password);
+
+  const response = await fetch(
+    "http://127.0.0.1:8000/auth/sign-in",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.detail ?? "Erro ao iniciar sessão");
+  }
+
+  localStorage.setItem("access_token", data.access_token);
+  localStorage.setItem("refresh_token", data.refresh_token);
+
+  return data;
+}
+Uso:
+try {
+  const result = await signIn(
+    "junior",
+    "Informatico@12"
+  );
+
+  console.log(result);
+} catch (error) {
+  console.error(error.message);
+}
+Chamar endpoints protegidos
+async function getProtectedData() {
+  const accessToken = localStorage.getItem("access_token");
+
+  const response = await fetch(
+    "http://127.0.0.1:8000/auth/refresh",
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  return response.json();
+}
+O formato do header deve ser exatamente:
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Axios
+import axios from "axios";
+
+async function signIn(username, password) {
+  const formData = new URLSearchParams();
+
+  formData.append("username", username);
+  formData.append("password", password);
+
+  const response = await axios.post(
+    "http://127.0.0.1:8000/auth/sign-in",
+    formData,
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  localStorage.setItem(
+    "access_token",
+    response.data.access_token
+  );
+
+  localStorage.setItem(
+    "refresh_token",
+    response.data.refresh_token
+  );
+
+  return response.data;
+}
+Python com requests
+import requests
+
+response = requests.post(
+    "http://127.0.0.1:8000/auth/sign-in",
+    data={
+        "username": "junior",
+        "password": "Informatico@12",
+    },
+)
+
+print(response.status_code)
+print(response.json())
+Nesse caso utiliza-se data=, não json=, porque OAuth2PasswordRequestForm espera formulário.
+cURL
+curl -X POST "http://127.0.0.1:8000/auth/sign-in" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=junior&password=Informatico%4012"
+Corpo enviado
+Conceitualmente, o navegador envia:
+username=junior&password=Informatico%4012
+E recebe:
+{
+  "access_token": "eyJhbGciOi...",
+  "refresh_token": "eyJhbGciOi...",
+  "token_type": "bearer"
+}
+Observação importante: para uma aplicação web exposta à internet, guardar tokens em localStorage aumenta o impacto de
+ataques XSS. Uma arquitetura mais segura costuma armazenar o refresh token num cookie HttpOnly, Secure e SameSite,
+deixando o access token com duração curta.
+
+
+
+
+
+
+
+
