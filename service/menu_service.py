@@ -21,7 +21,8 @@ class MenuService:
         new_menu = MenuSchema(
             name=menu.name,
             restaurant_id=menu.restaurant_id,
-            description=menu.description
+            description=menu.description,
+            profile_pic_url=menu.profile_pic_url
         )
         return self.menu_dao.create(new_menu)
 

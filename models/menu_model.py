@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, ConfigDict
 class MenuModel(BaseModel):
     name: str
     description: str | None = None
+    profile_pic_url: str | None = None
 
 class MenuCreate(MenuModel):
     restaurant_id: int = Field(gt=0)

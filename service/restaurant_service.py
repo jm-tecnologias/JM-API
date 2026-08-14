@@ -6,7 +6,6 @@ from dao.restaurante_dao import RestauranteDao
 from database.schema.restaurante_schema import RestaurantSchema
 from models.restaurant_model import RestaurantCreate, RestaurantResponse, RestaurantUpdate
 
-
 class RestaurantService:
     def __init__(self, database: Session):
         self.dao = RestauranteDao(database)
@@ -44,3 +43,6 @@ class RestaurantService:
 
     def find_all(self, skip, limit) -> list[RestaurantSchema]:
         return self.dao.find_all(skip=skip, limit=limit)
+
+    def find_by_id(self, rest_id):
+        return self.dao.find_by_id(rest_id)

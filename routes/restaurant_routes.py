@@ -29,3 +29,7 @@ async def list_all(skip: int = Query(default=0, ge=0),
                   limit:int = Query(default=100, ge=1, le=500),
                   service: RestaurantService = Depends(get_restaurant_service)) -> List[RestaurantResponse]:
     return service.find_all(skip=skip, limit=limit)
+
+# @restaurant_router.get("/find-by-od/{rest_id}", response_model=RestaurantResponse, status_code=status.HTTP_200_OK)
+# async def update(rest_id: int, service: RestaurantService = Depends(get_restaurant_service)) -> RestaurantResponse:
+#     return service.find_by_id(rest_id)

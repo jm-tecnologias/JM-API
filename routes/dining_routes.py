@@ -15,6 +15,7 @@ from models.dining_model import (
     TableSessionSummary,
 )
 from models.menu_model import MenuResponse
+from models.restaurant_model import RestaurantResponse
 from models.user_model import StaffRoleUpdate, UserResponse
 from service.dining_service import DiningService
 from service.security_service import require_roles
@@ -89,6 +90,13 @@ async def open_table_session(data: TableSessionCreate, service: DiningService = 
 @public_router.get("/table-sessions/{session_id}/menu", response_model=list[MenuResponse])
 def get_menu(table_session=Depends(get_table_session), service: DiningService = Depends(get_dining_service)):
     return service.get_public_menu(table_session)
+
+@public_router.get("/restaurant-data/{rest_id}", response_model=RestaurantResponse, status_code=status.HTTP_200_OK)
+def get_restaurant_data(
+    rest_id: int,
+    service: DiningService = Depends(get_dining_service),
+) -> RestaurantResponse:
+    return service.find_by_id(rest_id)
 
 
 @public_router.post("/table-sessions/{session_id}/orders", response_model=DiningOrderResponse, status_code=201)

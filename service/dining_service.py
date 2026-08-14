@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
+from dao.restaurante_dao import RestauranteDao
 from database.schema.item_order_schema import ItemOrderSchema
 from database.schema.menu_schema import ItemSchema, MenuSchema
 from database.schema.order_schema import OrderSchema
@@ -38,6 +39,7 @@ ORDER_TRANSITIONS = {
 class DiningService:
     def __init__(self, database: Session):
         self.database = database
+        self.daoRest = RestauranteDao(database)
 
     def scan_table(self, table_token: str) -> TableSchema:
         table = self.database.scalar(
@@ -128,6 +130,15 @@ class DiningService:
         if not table_session:
             raise HTTPException(status_code=404, detail="Table session not found")
         return table_session
+
+    def find_by_id(self, rest_id: int) -> RestaurantSchema:
+        restaurant = self.daoRest.find_by_id(rest_id)
+        if restaurant is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Restaurant not found",
+            )
+        return restaurant
 
     def create_order(self, table_session: TableSessionSchema, data: ClientOrderCreate, request_key: str) -> OrderSchema:
         if table_session.status != SessionStatus.OPEN.value:
